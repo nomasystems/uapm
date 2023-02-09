@@ -1,0 +1,9 @@
+[
+    {
+        "name": "swiftformat",
+        "version": "0.50.8",
+        "url": "https://github.com/nicklockwood/SwiftFormat/releases/download/0.50.8/swiftformat.zip",
+        "checksum": "7156d128adcb9c1890935d04922d65a26e4014f009a0d5cdafad1a303796b3b2",
+        "archiveExecutablePath": "swiftformat"
+    }
+]

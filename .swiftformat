@@ -1,0 +1,38 @@
+## file options
+
+## format options
+
+--header Copyright {created.year} Nomasystems S.L.
+--importgrouping testable-last
+--indent 4
+--indentstrings true
+--maxwidth 100
+--operatorfunc no-space
+--patternlet inline
+--ranges no-space
+--stripunusedargs closure-only
+--wraparguments before-first
+--wrapcollections before-first
+--wrapconditions before-first
+--wrapparameters before-first
+--wrapreturntype if-multiline
+--wrapternary before-operators
+
+## rules
+
+--enable blankLineAfterImports
+# opaqueGenericParameters is not always a safe transformation
+--disable opaqueGenericParameters
+--enable preferDouble
+# KeyPaths are quite slow https://github.com/apple/swift/issues/51793
+--disable preferKeyPath
+--disable redundantLetError
+--disable redundantRawValues
+# redundantSelf is not always a safe transformation
+--disable redundantSelf
+# Type declarations may be there for compilation performance
+--disable redundantType
+# Outlets may need to be weak on a case-by-case basis to avoid a retain cycle
+--disable strongOutlets
+# Sometimes trailing closures reduce readability
+--disable trailingClosures
