@@ -26,5 +26,11 @@ let package = Package(
             ]
         ),
         .target(name: "Util"),
+        .testTarget(
+            name: "UapmLibTests",
+            dependencies: [
+                .target(name: "UapmLib"),
+            ]
+        ),
     ]
 )

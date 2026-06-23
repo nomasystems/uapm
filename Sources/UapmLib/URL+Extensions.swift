@@ -3,16 +3,22 @@
 import Foundation
 
 extension URL {
-    var pathExtensions: String {
-        var result = ""
-        var url = self
-        while url.pathExtension != "" {
-            if result != "" {
-                result += "."
-            }
-            result += url.pathExtension
-            url = url.deletingPathExtension()
+    private static let knownCompoundPathExtensions: Set<String> = [
+        "tar.gz",
+        "tar.bz2",
+        "tar.xz",
+        "tar.zst",
+    ]
+
+    var recognizedPathExtension: String {
+        let filename = lastPathComponent.lowercased()
+
+        if let compoundExtension = Self.knownCompoundPathExtensions.first(where: {
+            filename.hasSuffix(".\($0)")
+        }) {
+            return compoundExtension
         }
-        return result
+
+        return pathExtension.lowercased()
     }
 }
