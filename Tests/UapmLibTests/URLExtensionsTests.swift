@@ -12,19 +12,21 @@ struct URLExtensionsTests {
         #expect(url.recognizedPathExtension == "zip")
     }
 
-    @Test func returnsKnownCompoundExtension() {
-        let url = URL(string: "https://example.com/tool.tar.gz")!
-        #expect(url.recognizedPathExtension == "tar.gz")
+    @Test(arguments: URL.knownCompoundPathExtensions)
+    func returnsKnownCompoundExtension(ext: String) {
+        let url = URL(string: "https://example.com/tool.\(ext)")!
+        #expect(url.recognizedPathExtension == ext)
     }
 
     @Test func ignoresVersionNumbersInFilename() {
-        let url = URL(string: "https://example.com/ktlint-1.8.0.zip")!
+        let url = URL(string: "https://example.com/tool-1.8.0.zip")!
         #expect(url.recognizedPathExtension == "zip")
     }
 
-    @Test func returnsKnownCompoundExtensionAfterVersionNumber() {
-        let url = URL(string: "https://example.com/tool-2.1.0.tar.gz")!
-        #expect(url.recognizedPathExtension == "tar.gz")
+    @Test(arguments: URL.knownCompoundPathExtensions)
+    func returnsKnownCompoundExtensionAfterVersionNumber(ext: String) {
+        let url = URL(string: "https://example.com/tool-2.1.0.\(ext)")!
+        #expect(url.recognizedPathExtension == ext)
     }
 
     @Test func returnsEmptyStringWhenFilenameHasNoExtension() {
@@ -33,22 +35,20 @@ struct URLExtensionsTests {
     }
 
     @Test func unknownCompoundExtensionFallsBackToFinalExtension() {
-        let url = URL(string: "https://example.com/file.foo.bar")!
-        #expect(url.recognizedPathExtension == "bar")
-    }
-
-    @Test func uppercaseTarGzExtension() {
-        let url = URL(string: "https://example.com/tool.TAR.GZ")!
-        #expect(url.recognizedPathExtension == "tar.gz")
-    }
-
-    @Test func extensionWithQueryItems() {
-        let url = URL(string: "https://example.com/tool.tar.gz?download=true")!
-        #expect(url.recognizedPathExtension == "tar.gz")
-    }
-
-    @Test func versionedUnknownCompoundExtension() {
         let url = URL(string: "https://example.com/tool-1.8.0.foo.bar")!
         #expect(url.recognizedPathExtension == "bar")
     }
+
+    @Test(arguments: URL.knownCompoundPathExtensions)
+    func uppercaseCompoundExtension(ext: String) {
+        let url = URL(string: "https://example.com/tool.\(ext.uppercased())")!
+        #expect(url.recognizedPathExtension == ext)
+    }
+
+    @Test(arguments: URL.knownCompoundPathExtensions)
+    func compoundExtensionWithQueryItems(ext: String) {
+        let url = URL(string: "https://example.com/tool.\(ext)?download=true")!
+        #expect(url.recognizedPathExtension == ext)
+    }
+
 }
