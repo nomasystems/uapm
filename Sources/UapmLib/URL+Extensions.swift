@@ -3,7 +3,7 @@
 import Foundation
 
 extension URL {
-    private static let knownCompoundPathExtensions: Set<String> = [
+    static let knownCompoundPathExtensions: Set<String> = [
         "tar.gz",
         "tar.bz2",
         "tar.xz",
