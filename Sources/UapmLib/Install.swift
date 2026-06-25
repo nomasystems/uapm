@@ -90,37 +90,24 @@ private func unpack(
     }
 
     try await FileManager.default.withTemporaryDirectory { tmpDirUrl in
-        try await extract(
-            fileUrl: fileUrl,
-            extractDir: tmpDirUrl,
-            pathExtension: package.url.recognizedPathExtension
+        guard let format = ArchiveFormat.recognize(package.url) else {
+            throw DownloadError.unrecognizedArchiveType(package.url.pathExtension)
+        }
+        let cmd = format.extractionCommand(archive: fileUrl, destination: tmpDirUrl)
+        try await Process.runAndOutputError(
+            url: URL(fileURLWithPath: cmd.command),
+            arguments: cmd.arguments
         )
         let executableUrl = tmpDirUrl.appendingPathComponent(package.archiveExecutablePath)
         try body(executableUrl)
     }
 }
 
-private func extract(fileUrl: URL, extractDir: URL, pathExtension: String) async throws {
-    let commandAndArgument: (String, [String])
-    switch pathExtension {
-    case "zip":
-        commandAndArgument = ("/usr/bin/unzip", [fileUrl.path, "-d", extractDir.path])
-    case let ext where URL.knownCompoundPathExtensions.contains(ext):
-        commandAndArgument = ("/usr/bin/tar", ["-C", extractDir.path, "-xvf", fileUrl.path])
-    default:
-        throw DownloadError.unrecognizedArchiveType(pathExtension)
-    }
-    try await Process.runAndOutputError(
-        url: URL(fileURLWithPath: commandAndArgument.0),
-        arguments: commandAndArgument.1
-    )
-}
-
 private func cacheFileUrl(package: UapmPackage, cacheDir: URL) -> URL {
     let urlSha256 = SHA256.hash(data: Data(package.url.absoluteString.utf8))
-    let pathExtensions = package.url.recognizedPathExtension
+    let ext = package.url.pathExtension
     let filename =
-        "\(package.name)-\(package.version)-\(urlSha256.hexadecimalString).\(pathExtensions)"
+        "\(package.name)-\(package.version)-\(urlSha256.hexadecimalString).\(ext)"
     return cacheDir.appendingPathComponent(filename)
 }
 
