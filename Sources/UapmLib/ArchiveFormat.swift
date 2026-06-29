@@ -1,16 +1,17 @@
 // Copyright 2023 Nomasystems S.L.
 
 import Foundation
+import Util
 
 enum ArchiveFormat {
     case tar
     case zip
 
     static func recognize(_ url: URL) -> ArchiveFormat? {
-        let name = url.lastPathComponent.lowercased()
-        let ext = (name as NSString).pathExtension
+        let fileURL = URL(fileURLWithPath: url.lastPathComponent.lowercased())
+        let ext = fileURL.pathExtension
 
-        if ext == "tar" || ((name as NSString).deletingPathExtension as NSString).pathExtension == "tar" {
+        if ext == "tar" || fileURL.deletingPathExtension().pathExtension == "tar" {
             return .tar
         } else if ext == "zip" {
             return .zip
@@ -19,21 +20,44 @@ enum ArchiveFormat {
         return nil
     }
 
+    func fileExtension(from url: URL) -> String {
+        let fileURL = URL(fileURLWithPath: url.lastPathComponent.lowercased())
+        switch self {
+        case .tar:
+            let outer = fileURL.pathExtension
+            let inner = fileURL.deletingPathExtension().pathExtension
+            return inner == "tar" ? "tar.\(outer)" : "tar"
+        case .zip:
+            return "zip"
+        }
+    }
+
+    struct ExtractionCommand {
+        fileprivate let url: URL
+        fileprivate let arguments: [String]
+    }
+
     func extractionCommand(
         archive: URL,
         destination: URL
-    ) -> (command: String, arguments: [String]) {
+    ) -> ExtractionCommand {
         switch self {
         case .tar:
-            (
-                command: "/usr/bin/tar",
+            ExtractionCommand(
+                url: URL(fileURLWithPath: "/usr/bin/tar"),
                 arguments: ["-C", destination.path, "-xf", archive.path]
             )
         case .zip:
-            (
-                command: "/usr/bin/unzip",
+            ExtractionCommand(
+                url: URL(fileURLWithPath: "/usr/bin/unzip"),
                 arguments: [archive.path, "-d", destination.path]
             )
         }
+    }
+}
+
+extension Process {
+    static func runAndOutputError(_ command: ArchiveFormat.ExtractionCommand) async throws {
+        try await runAndOutputError(url: command.url, arguments: command.arguments)
     }
 }

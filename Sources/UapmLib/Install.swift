@@ -93,10 +93,8 @@ private func unpack(
         guard let format = ArchiveFormat.recognize(package.url) else {
             throw DownloadError.unrecognizedArchiveType(package.url.pathExtension)
         }
-        let cmd = format.extractionCommand(archive: fileUrl, destination: tmpDirUrl)
         try await Process.runAndOutputError(
-            url: URL(fileURLWithPath: cmd.command),
-            arguments: cmd.arguments
+            format.extractionCommand(archive: fileUrl, destination: tmpDirUrl)
         )
         let executableUrl = tmpDirUrl.appendingPathComponent(package.archiveExecutablePath)
         try body(executableUrl)
@@ -105,9 +103,10 @@ private func unpack(
 
 private func cacheFileUrl(package: UapmPackage, cacheDir: URL) -> URL {
     let urlSha256 = SHA256.hash(data: Data(package.url.absoluteString.utf8))
-    let ext = package.url.pathExtension
+    let format = ArchiveFormat.recognize(package.url)
+    let pathExtension = format?.fileExtension(from: package.url) ?? package.url.pathExtension
     let filename =
-        "\(package.name)-\(package.version)-\(urlSha256.hexadecimalString).\(ext)"
+        "\(package.name)-\(package.version)-\(urlSha256.hexadecimalString).\(pathExtension)"
     return cacheDir.appendingPathComponent(filename)
 }
 

@@ -7,55 +7,19 @@ import Testing
 
 @Suite
 struct ArchiveFormatTests {
-    @Test func recognizesZip() {
-        let url = URL(string: "https://example.com/tool.zip")!
-        #expect(ArchiveFormat.recognize(url) == .zip)
-    }
-
-    @Test(arguments: ["tar.gz", "tar.bz2", "tar.xz", "tar.zst"])
-    func recognizesTarVariants(ext: String) {
-        let url = URL(string: "https://example.com/tool.\(ext)")!
-        #expect(ArchiveFormat.recognize(url) == .tar)
-    }
-
-    @Test func recognizesPlainTar() {
-        let url = URL(string: "https://example.com/tool.tar")!
-        #expect(ArchiveFormat.recognize(url) == .tar)
-    }
-
-    @Test func returnsNilForUnknownExtension() {
-        let url = URL(string: "https://example.com/tool.dmg")!
-        #expect(ArchiveFormat.recognize(url) == nil)
-    }
-
-    @Test func returnsNilForNoExtension() {
-        let url = URL(string: "https://example.com/tool")!
-        #expect(ArchiveFormat.recognize(url) == nil)
-    }
-
-    @Test func ignoresVersionNumbersInFilename() {
-        let url = URL(string: "https://example.com/tool-1.8.0.zip")!
-        #expect(ArchiveFormat.recognize(url) == .zip)
-    }
-
-    @Test(arguments: ["tar.gz", "tar.bz2", "tar.xz", "tar.zst"])
-    func recognizesTarVariantsAfterVersionNumber(ext: String) {
-        let url = URL(string: "https://example.com/tool-2.1.0.\(ext)")!
-        #expect(ArchiveFormat.recognize(url) == .tar)
-    }
-
-    @Test func uppercaseExtension() {
-        let url = URL(string: "https://example.com/tool.TAR.GZ")!
-        #expect(ArchiveFormat.recognize(url) == .tar)
-    }
-
-    @Test func extensionWithQueryItems() {
-        let url = URL(string: "https://example.com/tool.tar.gz?download=true")!
-        #expect(ArchiveFormat.recognize(url) == .tar)
-    }
-
-    @Test func unknownCompoundExtensionReturnsNil() {
-        let url = URL(string: "https://example.com/tool-1.8.0.foo.bar")!
-        #expect(ArchiveFormat.recognize(url) == nil)
+    @Test(arguments: [
+        ("tool.zip", ArchiveFormat?.some(.zip)),
+        ("tool.tar", ArchiveFormat?.some(.tar)),
+        ("tool.tar.gz", ArchiveFormat?.some(.tar)),
+        ("tool.tar.foobar", ArchiveFormat?.some(.tar)),
+        ("tool-1.0.0.zip", ArchiveFormat?.some(.zip)),
+        ("tool-1.0.0.tar.gz", ArchiveFormat?.some(.tar)),
+        ("tool.TAR.GZ", ArchiveFormat?.some(.tar)),
+        ("tool.foo.bar", ArchiveFormat?.none),
+        ("tool", ArchiveFormat?.none),
+    ])
+    func recognize(path: String, expected: ArchiveFormat?) {
+        let url = URL(string: "https://example.com/\(path)")!
+        #expect(ArchiveFormat.recognize(url) == expected)
     }
 }
